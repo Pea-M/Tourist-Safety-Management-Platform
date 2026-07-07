@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UserID Factory Frontend</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      gap: 20px;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 350px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 15px;
+    }
+    button {
+      margin: 8px;
+      padding: 10px 15px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    input {
+      padding: 8px;
+      width: 90%;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    #message, #createMessage {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <!-- ✅ Create User ID -->
+  <div class="container">
+    <h2>Create User ID</h2>
+    <input type="text" id="createId" placeholder="Enter new ID">
+    <br>
+    <button onclick="createUserID()">Create</button>
+    <p id="createMessage"></p>
+  </div>
+
+  <!-- ✅ Verify User ID -->
+  <div class="container">
+    <h2>Verify User ID</h2>
+    <input type="text" id="verifyId" placeholder="Enter your ID">
+    <br>
+    <button onclick="verifyID()">Verify</button>
+    <p id="message"></p>
+  </div>
+
+  <!-- ✅ Load ethers.js before your script -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+  <script>
+    console.log("Ethers version:", ethers.version);
+
+    // Replace with your deployed contract info
+    const contractAddress = "0x5B4dD31dD16213d07E994A7Ff97cbD3A2511eE8e";
+    const contractABI = [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "userContract",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          }
+        ],
+        "name": "UserIDCreated",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "userID",
+            "type": "string"
+          }
+        ],
+        "name": "createUserID",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "getAllUserIDs",
+        "outputs": [
+          {
+            "internalType": "address[]",
+            "name": "",
+            "type": "address[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "getCount",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "number",
+            "type": "string"
+          }
+        ],
+        "name": "verify",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ];
+
+    let provider, signer, contract;
+
+    // Connect to MetaMask
+    async function connect() {
+      if (window.ethereum) {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = provider.getSigner();
+        contract = new ethers.Contract(contractAddress, contractABI, signer);
+        console.log("Connected to Factory Contract:", contractAddress);
+      } else {
+        alert("Please install MetaMask!");
+      }
+    }
+
+    // ✅ Create ID
+    async function createUserID() {
+      const id = document.getElementById("createId").value.trim();
+      if (!id) return alert("Enter an ID to create!");
+
+      try {
+        const tx = await contract.createUserID(id);
+        document.getElementById("createMessage").textContent = "⏳ Transaction sent... waiting for confirmation";
+        await tx.wait();
+        document.getElementById("createMessage").textContent = "✅ User ID Created!";
+        document.getElementById("createMessage").style.color = "green";
+      } catch (err) {
+        console.error(err);
+        document.getElementById("createMessage").textContent = "❌ Error creating ID!";
+        document.getElementById("createMessage").style.color = "red";
+      }
+    }
+
+    // ✅ Verify ID
+    async function verifyID() {
+      const id = document.getElementById("verifyId").value.trim();
+      if (!id) return alert("Enter your ID!");
+
+      try {
+        const result = await contract.verify(id);
+        document.getElementById("message").textContent = result
+          ? "✅ ID Verified Successfully!"
+          : "❌ ID Not Found!";
+        document.getElementById("message").style.color = result ? "green" : "red";
+      } catch (err) {
+        console.error(err);
+        alert("Error verifying ID");
+      }
+    }
+
+    // Call once at page load
+    window.addEventListener("load", async () => {
+      await connect();
+    });
+  </script>
+</body>
+</html>
