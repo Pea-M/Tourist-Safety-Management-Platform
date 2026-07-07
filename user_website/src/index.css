@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import 'leaflet/dist/leaflet.css';
+
+/* Custom animations for danger zones */
+@keyframes pulse-danger {
+  0% { 
+    fill-opacity: 0.3;
+    stroke-opacity: 0.8;
+  }
+  50% { 
+    fill-opacity: 0.5;
+    stroke-opacity: 1;
+  }
+  100% { 
+    fill-opacity: 0.3;
+    stroke-opacity: 0.8;
+  }
+}
+
+.danger-zone {
+  animation: pulse-danger 2s infinite;
+}
+
+.danger-zone-selected {
+  animation: pulse-danger 1s infinite;
+}
+
+/* Leaflet custom styling */
+.leaflet-container {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: #f8fafc;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.leaflet-control-zoom {
+  display: none;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .leaflet-container {
+    background: #1f2937;
+    filter: invert(1) hue-rotate(180deg);
+  }
+  
+  .leaflet-tile {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
